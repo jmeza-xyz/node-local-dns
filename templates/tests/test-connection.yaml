@@ -1,0 +1,20 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "node-local-dns.fullname" . }}-test-connection
+  labels:
+    {{- include "node-local-dns.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: dns-test
+      image: registry.gitlab.edgecastcdn.net/ci-tools/images/k8s-tools:v1.3.0
+      command: ['dig']
+      args: ['yahoo.com']
+  {{- with .Values.imagePullSecrets }}
+  imagePullSecrets:
+    {{- toYaml . | nindent 8 }}
+  {{- end }}
+  restartPolicy: Never

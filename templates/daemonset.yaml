@@ -1,0 +1,103 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "node-local-dns.fullname" . }}
+  labels:
+    {{- include "node-local-dns.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "node-local-dns.selectorLabels" . | nindent 6 }}
+  updateStrategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "node-local-dns.labels" . | nindent 8 }}
+	{{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "node-local-dns.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      hostNetwork: {{ .Values.useHostNetwork }}
+      dnsPolicy: Default
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - -localip
+            - {{ .Values.cilium.localDnsIp }}
+            - -conf
+            - /etc/Corefile
+          {{- if .Values.nodelocal.container.args }}
+          {{- range $args := .Values.nodelocal.container.args }}
+            - {{ tpl $args $ }}
+          {{- end }}
+          {{- end }}
+            - -metrics-listen-address
+            - "0.0.0.0:{{ add .Values.metrics.port 100 }}"
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.metrics.port }}
+              protocol: TCP
+          {{- if .Values.cilium.enabled }}
+            - name: {{ .Values.cilium.udp.portName | default "dns" }}
+              containerPort: 53
+              protocol: UDP
+            - name: {{ .Values.cilium.tcp.portName | default "dns-tcp" }}
+              containerPort: 53
+              protocol: TCP
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          - mountPath: /run/xtables.lock
+            name: xtables-lock
+            readOnly: false
+          - name: config-volume
+            mountPath: /etc/coredns
+      volumes:
+        - name: xtables-lock
+          hostPath:
+            path: /run/xtables.lock
+            type: FileOrCreate
+        - name: config-volume
+          configMap:
+            name: {{ include "node-local-dns.fullname" . }}
+            items:
+              - key: Corefile
+                path: Corefile.base
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

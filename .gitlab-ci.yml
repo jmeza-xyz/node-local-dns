@@ -1,0 +1,5 @@
+---
+include:
+  - project: edgecast/edgecompute/kpe/helm-charts/templates
+    file:
+      - "/helm.yml"
