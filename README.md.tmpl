@@ -1,0 +1,55 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+
+## Introduction
+
+This chart deploys Kubernetes [NodeLocal DNS Cache](https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/) service.
+
+## Prerequisites
+
+- Kubernetes 1.18+
+- Helm 3
+
+## Installing the Chart
+
+To install the chart with the release name `node-local-dns`:
+
+```console
+$ helm repo add kpe https://harbor.aws-kpe-support-uswest2.ecsvc.net/chartrepo/kpe-helm-charts
+$ helm repo update
+$ helm upgrade -i node-local-dns kpe/node-local-dns -n node-local-dns --create-namespace --version={{ template "chart.version" . }}
+```
+
+The command deploys necessary `Custom Resource Definitions` and `node-local-dns services` on the Kubernetes cluster in the default configuration. The [configuration](#configuration) section lists the parameters that can be configured during installation.
+
+> **Tip**: List all releases using `helm list`
+
+## Uninstalling the Chart
+
+To uninstall/delete the `node-local-dns` release:
+
+```console
+$ helm delete node-local-dns -n node-local-dns
+```
+
+The command removes all the Kubernetes components associated with the chart and deletes the release.
+
+## Configuration
+
+The following table lists the configurable parameters of the `node-local-dns` chart and their default values.
+
+{{ template "chart.valuesSection" . }}
+
+
+Specify each parameter using the `--set key=value[,key=value]` argument to `helm upgrade`. For example:
+
+```console
+$ helm upgrade -i node-local-dns kpe/node-local-dns -n node-local-dns --create-namespace --version={{ template "chart.version" . }} --set serviceAccount.create=false
+```
+
+Alternatively, a YAML file that specifies the values for the parameters can be provided while
+installing the chart. For example:
+
+```console
+$ helm upgrade -i node-local-dns kpe/node-local-dns -n node-local-dns --create-namespace --version={{ template "chart.version" . }} --values values.yaml
