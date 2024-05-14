@@ -4,5 +4,5 @@ name: node-local-dns
 description: NodeLocal DNS Cache helm chart for RKE2 with Cilium.
 icon: https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.svg
 type: application
-version: 1.0.0
+version: 1.0.1
 appVersion: "1.22.28"

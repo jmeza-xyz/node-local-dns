@@ -1,9 +1,11 @@
 ---
+# -- NodeLocal DNS Cache Daemonset Image
 image:
   repository: rancher/hardened-dns-node-cache
   pullPolicy: IfNotPresent
   tag: 1.22.28-build20240125
 
+# -- NodeLocal DNS Cache Daemonset Container Image Args
 nodelocal:
   container:
     args:
@@ -12,6 +14,7 @@ nodelocal:
       - -skipteardown=true
       - -setupinterface=false
       - -setupiptables=false
+# -- NodeLocal DNS Cache Daemonset Config Configmap values
   config:
     zones:
       cluster.local:53:
