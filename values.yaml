@@ -73,7 +73,7 @@ nodelocal:
           loop: true
           bind: 0.0.0.0
           forward:
-            parameters: __PILLAR__UPSTREAM__SERVERS__  # defaults to /etc/resolv.conf
+            parameters: /etc/resolv.conf
           prometheus: true
         # hosts:
         #   entries:     # dns.hosts INLINE
